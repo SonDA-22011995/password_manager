@@ -7,7 +7,7 @@ from tkinter import *
 from tkinter import ttk
 
 root = Tk()
-root.minsize(700, 500)
+root.minsize(700, 400)
 root.title("Password Manager")
 
 mainframe = ttk.Frame(root, padding=(60, 10, 60, 10))
@@ -15,7 +15,7 @@ mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
 
 canvas = Canvas(mainframe, width=200, height=189)
 logo = PhotoImage(file='./static/logo.png')
-canvas.create_image(100, 100, image=logo)
+canvas.create_image(80, 100, image=logo)
 
 website_label = ttk.Label(mainframe, text="Website:", font=('Helvetica', 11, 'bold'))
 website = ttk.Entry(mainframe)
@@ -35,6 +35,8 @@ password_label.grid(column=0, row=3, sticky=(W))
 password.grid(column=1, row=3, sticky=(W,E))
 generate_password_bt.grid(column=2, row=3, sticky=(W,E))
 add_password_bt.grid(column=1, row=4, columnspan=2, sticky=(W,E))
+
+website.focus()
 
 root.columnconfigure(0, weight=1)
 mainframe.columnconfigure(1, weight=1)
