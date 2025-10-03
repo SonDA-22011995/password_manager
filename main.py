@@ -3,6 +3,7 @@
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 from pathlib import Path
 import csv
+
 import pandas as pd
 from tkinter import messagebox
 
@@ -30,7 +31,7 @@ def load_data():
 
     data = pd.read_csv(PATH)
 
-def check_if_exits():
+def check_if_exists():
     if data is None:
         return False
 
@@ -51,7 +52,7 @@ def save_data():
     user_data = [website_data, username_data, password_data]
     data.loc[len(data)] = user_data
 
-    data.to_csv(path, index=False, header=False)
+    data.to_csv(path, index=False, header=True)
 
 def update_data():
     website_data = website.get().lower()
@@ -66,11 +67,18 @@ def update_data():
         'Password'
     ] = password_data
 
-    data.to_csv(path, index=False)
+    data.to_csv(path, index=False, header=True)
+
+def find_data(value, column) -> list[dict]:
+    value = value.lower()
+    filtered  = data[(data[column].str.lower() == value)]
+    return filtered.to_dict(orient='records')
 
 def add_action():
-    if not check_if_exits():
+    if not check_if_exists():
         save_data()
+        website.delete(0, END)
+        password.delete(0, END)
     else:
         messagebox.showwarning(
             message="Your website already has a user and a password",
@@ -78,12 +86,31 @@ def add_action():
         )
 
 def update_action():
-    if check_if_exits():
+    if check_if_exists():
         update_data()
     else:
         messagebox.showwarning(
             message="Your website hasn't a user and a password",
             icon='warning', title='Update password'
+        )
+
+def find_action():
+    website_data = website.get().lower()
+    filter_data = find_data(value=website_data, column="Website")
+    message = ""
+    if len(filter_data):
+        for value in filter_data:
+            message += f"Website {value['Website']}: user name is {value['UserName']}, password is {value['Password']}\n"
+
+        messagebox.showinfo(
+            message=message,
+            icon='info', title='User information'
+        )
+
+    else:
+        messagebox.showinfo(
+            message="Can't find user information",
+            icon='info', title='User information'
         )
 
 load_data()
@@ -129,9 +156,16 @@ update_password_bt = ttk.Button(
     command=update_action
 )
 
+find_bt = ttk.Button(
+    mainframe,
+    text="Find",
+    command=find_action
+)
+
 canvas.grid(row=0, column=1, columnspan=2)
 website_label.grid(column=0, row=1, sticky=(W))
-website.grid(column=1, row=1, columnspan=2, sticky=(W,E))
+website.grid(column=1, row=1, columnspan=1, sticky=(W,E))
+find_bt.grid(column=2, row=1, columnspan=1, sticky=(W,E))
 username_label.grid(column=0, row=2, sticky=(W))
 username.grid(column=1, row=2, columnspan=2, sticky=(W,E))
 password_label.grid(column=0, row=3, sticky=(W))
