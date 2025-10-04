@@ -1,5 +1,31 @@
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
+import random
+letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
 
+def generate_password():
+    nr_letters = random.randint(8, 10)
+    nr_symbols = random.randint(2, 4)
+    nr_numbers = random.randint(2, 4)
+
+    # for char in range(nr_letters):
+    #     password_list.append(random.choice(letters))
+
+    password_list = [random.choice(letters) for char in range(nr_letters)]
+
+    # for char in range(nr_symbols):
+    #     password_list += random.choice(symbols)
+
+    password_list = password_list + [random.choice(symbols) for char in range(nr_symbols)]
+
+    # for char in range(nr_numbers):
+    #     password_list += random.choice(numbers)
+
+    password_list = password_list + [random.choice(numbers) for char in range(nr_numbers)]
+
+    random.shuffle(password_list)
+    return "".join(password_list)
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 from pathlib import Path
 import csv
@@ -37,37 +63,68 @@ def check_if_exists():
 
     website_data = website.get().lower()
     username_data = username.get().lower()
-
     return not data[
         (data["Website"].str.lower() == website_data) &
         (data["UserName"].str.lower() == username_data)
     ].empty
 
+def check_not_empty_entry(value):
+    return len(value)
 
 def save_data():
     website_data =  website.get()
     username_data = username.get()
     password_data = password.get()
 
-    user_data = [website_data, username_data, password_data]
-    data.loc[len(data)] = user_data
+    if (check_not_empty_entry(website_data)
+            and check_not_empty_entry(username_data)
+            and check_not_empty_entry(password_data)
+    ):
+        user_data = [website_data, username_data, password_data]
+        data.loc[len(data)] = user_data
 
-    data.to_csv(path, index=False, header=True)
+        data.to_csv(path, index=False, header=True)
+
+        website.delete(0, END)
+        password.delete(0, END)
+
+        messagebox.showinfo(
+            message='Add new user information successfully',
+            icon='info', title='Add'
+        )
+    else:
+        messagebox.showwarning(
+            message="Your user or website or password is empty",
+            icon='warning', title='Save password'
+        )
 
 def update_data():
     website_data = website.get().lower()
     username_data = username.get().lower()
     password_data = password.get()
 
-    data.loc[
-        (
-            (data['Website'].str.lower() == website_data) &
-            (data['UserName'].str.lower() == username_data)
-        ),
-        'Password'
-    ] = password_data
+    if check_not_empty_entry(password_data):
+        data.loc[
+            (
+                (data['Website'].str.lower() == website_data) &
+                (data['UserName'].str.lower() == username_data)
+            ),
+            'Password'
+        ] = password_data
 
-    data.to_csv(path, index=False, header=True)
+        data.to_csv(path, index=False, header=True)
+
+        messagebox.showinfo(
+            message='Update user information successfully',
+            icon='info', title='Update'
+        )
+    else:
+        messagebox.showwarning(
+            message="Your password is empty",
+            icon='warning', title='Update password'
+        )
+
+
 
 def find_data(value, column) -> list[dict]:
     value = value.lower()
@@ -77,8 +134,7 @@ def find_data(value, column) -> list[dict]:
 def add_action():
     if not check_if_exists():
         save_data()
-        website.delete(0, END)
-        password.delete(0, END)
+
     else:
         messagebox.showwarning(
             message="Your website already has a user and a password",
@@ -113,15 +169,15 @@ def find_action():
             icon='info', title='User information'
         )
 
+def generate_password_action():
+    password.delete(0, END)
+    password.insert(END, generate_password())
+
 load_data()
-
-
-
 
 # ---------------------------- UI SETUP ------------------------------- #
 from tkinter import *
 from tkinter import ttk
-
 
 root = Tk()
 root.minsize(700, 400)
@@ -143,7 +199,11 @@ username_label = ttk.Label(mainframe, text="Email/User name:", font=('Helvetica'
 username = ttk.Entry(mainframe, font=('Helvetica', 11, 'normal'))
 password_label = ttk.Label(mainframe, text="Password:", font=('Helvetica', 11, 'bold'))
 password = ttk.Entry(mainframe, font=('Helvetica', 11, 'normal'))
-generate_password_bt = ttk.Button(mainframe, text="Generate Password")
+generate_password_bt = ttk.Button(
+    mainframe,
+    text="Generate Password",
+    command=generate_password_action
+)
 add_password_bt = ttk.Button(
     mainframe,
     text="Add",
@@ -180,3 +240,5 @@ root.columnconfigure(0, weight=1)
 mainframe.columnconfigure(1, weight=1)
 mainframe.columnconfigure(2, weight=1)
 root.mainloop()
+
+
