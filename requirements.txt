@@ -1,0 +1,5 @@
+# Password Manager - Requirements
+# Compatible with Python 3.12
+
+pandas==2.3.2
+pyperclip==1.11.0
