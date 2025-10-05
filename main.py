@@ -174,6 +174,14 @@ def generate_password_action():
     password.delete(0, END)
     password.insert(END, generate_password())
 
+# ---------------------------- COPY USER NAME AND PASSWORD ------------------------------- #
+import pyperclip
+
+def copy_action():
+    username_data = username.get()
+    password_data = password.get()
+    pyperclip.copy(username_data + "/" + password_data)
+
 load_data()
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -223,6 +231,12 @@ find_bt = ttk.Button(
     command=find_action
 )
 
+copy_bt = ttk.Button(
+    mainframe,
+    text="Copy user name/password",
+    command=copy_action
+)
+
 # ---------------------------- CHILD WINDOW ------------------------------- #
 def open_child_window(user_data):
     child = Toplevel(root)
@@ -242,9 +256,9 @@ def open_child_window(user_data):
     tree.heading("user_name", text="User Name")
     tree.heading("password", text="Password")
 
-    tree.column("website", width=150, anchor="w", stretch=False)
-    tree.column("user_name", width=150, anchor="w", stretch=False)
-    tree.column("password", width=150, anchor="w", stretch=False)
+    tree.column("website", width=150, anchor="w", stretch=True)
+    tree.column("user_name", width=150, anchor="w", stretch=True)
+    tree.column("password", width=150, anchor="w", stretch=True)
 
     for row in user_data:
         tree.insert("", END,
@@ -283,6 +297,7 @@ password.grid(column=1, row=3, sticky=(W,E))
 generate_password_bt.grid(column=2, row=3, sticky=(W,E))
 add_password_bt.grid(column=1, row=4, columnspan=2, sticky=(W,E))
 update_password_bt.grid(column=1, row=5, columnspan=2, sticky=(W,E))
+copy_bt.grid(column=1, row=6, columnspan=2, sticky=(W,E))
 
 website.focus()
 
