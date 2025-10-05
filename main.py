@@ -153,15 +153,16 @@ def update_action():
 def find_action():
     website_data = website.get().lower()
     filter_data = find_data(value=website_data, column="Website")
-    message = ""
+    # message = ""
     if len(filter_data):
-        for value in filter_data:
-            message += f"Website {value['Website']}: user name is {value['UserName']}, password is {value['Password']}\n"
-
-        messagebox.showinfo(
-            message=message,
-            icon='info', title='User information'
-        )
+        open_child_window(filter_data)
+        # for value in filter_data:
+        #     message += f"Website {value['Website']}: user name is {value['UserName']}, password is {value['Password']}\n"
+        #
+        # messagebox.showinfo(
+        #     message=message,
+        #     icon='info', title='User information'
+        # )
 
     else:
         messagebox.showinfo(
@@ -222,6 +223,55 @@ find_bt = ttk.Button(
     command=find_action
 )
 
+# ---------------------------- CHILD WINDOW ------------------------------- #
+def open_child_window(user_data):
+    child = Toplevel(root)
+
+    child.title("Choose user information")
+    child.geometry("400x250")
+
+    columns = ("website", "user_name", "password")
+    tree = ttk.Treeview(
+        child,
+        columns=columns,
+        show="headings",
+        selectmode="browse",
+        height = len(user_data)
+    )
+    tree.heading("website", text="Website")
+    tree.heading("user_name", text="User Name")
+    tree.heading("password", text="Password")
+
+    tree.column("website", width=150, anchor="w", stretch=False)
+    tree.column("user_name", width=150, anchor="w", stretch=False)
+    tree.column("password", width=150, anchor="w", stretch=False)
+
+    for row in user_data:
+        tree.insert("", END,
+                    values=(row["Website"], row["UserName"], row["Password"])
+                    )
+
+    # tree.pack(fill="both", expand=True, padx=10, pady=10)
+    tree.pack(fill="x", padx=10, pady=10)
+
+    first_item = tree.get_children()[0]
+    tree.selection_set(first_item)
+
+    def confirm_selection():
+        selected_item = tree.selection()
+
+        if selected_item:
+            values = tree.item(selected_item[0], "values")
+            username.delete(0, END)
+            password.delete(0, END)
+            username.insert(END, values[1])
+            password.insert(END, values[2])
+        child.destroy()
+
+    ttk.Button(child, text="Submit", command=confirm_selection).pack(pady=10)
+
+
+# ---------------------------- GRID ------------------------------- #
 canvas.grid(row=0, column=1, columnspan=2)
 website_label.grid(column=0, row=1, sticky=(W))
 website.grid(column=1, row=1, columnspan=1, sticky=(W,E))
